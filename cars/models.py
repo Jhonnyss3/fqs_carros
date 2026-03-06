@@ -1,6 +1,20 @@
 from django.db import models
 
 
+class Brand(models.Model):
+    name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Marca'
+        verbose_name_plural = 'Marcas'
+
+    def __str__(self):
+        return self.name
+
+
 class Car(models.Model):
     # Anúncio
     title = models.CharField(max_length=200, blank=True)
@@ -8,7 +22,7 @@ class Car(models.Model):
     description = models.TextField(blank=True)
 
     # Identificação
-    brand = models.CharField(max_length=100, blank=True)
+    brand = models.ForeignKey('Brand', on_delete=models.PROTECT, blank=True, null=True, related_name='cars')
     model = models.CharField(max_length=100, blank=True)
     version = models.CharField(max_length=100, blank=True)
     year = models.PositiveIntegerField(blank=True, null=True)
@@ -46,9 +60,9 @@ class Car(models.Model):
     ]
     body_type = models.CharField(max_length=20, choices=BODY_CHOICES, blank=True)
 
-    engine = models.CharField(max_length=50, blank=True)        # ex: "2.0 Turbo"
+    engine = models.CharField(max_length=50, blank=True)
     horsepower = models.PositiveIntegerField(blank=True, null=True)
-    mileage = models.PositiveIntegerField(blank=True, null=True) # km rodados
+    mileage = models.PositiveIntegerField(blank=True, null=True)
     doors = models.PositiveSmallIntegerField(blank=True, null=True)
 
     # Preço
@@ -79,3 +93,18 @@ class Car(models.Model):
 
     def __str__(self):
         return f'{self.brand} {self.model} {self.year} - {self.title}'
+
+
+class CarImage(models.Model):
+    car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='cars/images/')
+    order = models.PositiveSmallIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order']
+        verbose_name = 'Foto'
+        verbose_name_plural = 'Fotos'
+
+    def __str__(self):
+        return f'Foto {self.order} - {self.car}'
